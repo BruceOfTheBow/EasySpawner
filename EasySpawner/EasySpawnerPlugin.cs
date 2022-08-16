@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine;
 using EasySpawner.UI;
 using EasySpawner.Config;
 
@@ -32,11 +33,17 @@ namespace EasySpawner
         public const string assetBundleName = "EasySpawnerAssetBundle";
         public const string favouritesFileName = "cooley.easyspawner.favouriteItems.txt";
 
+        public static readonly string[] recipeNameFilterList = new string[] { "Recipe_PotionHealthMinor", "Recipe_PotionStaminaMinor" };
+
+        static ManualLogSource _logger;
+
         public Harmony harmony;
 
         void Awake()
         {
             Debug.Log("Easy spawner: Easy spawner loaded plugin");
+
+            _logger = Logger;
 
             harmony = new Harmony("cooley.easyspawner");
             harmony.PatchAll();
@@ -283,15 +290,46 @@ namespace EasySpawner
             }
         }
 
-        private static GameObject SpawnItem(bool pickup, GameObject prefab, Player player)
-        {
-            if (pickup)
-            {
-                Player.m_localPlayer.PickupPrefab(prefab);
-                return null;
+        private static GameObject SpawnItem(bool pickup, GameObject prefab, Player player) {
+            ItemDrop itemDrop = prefab.GetComponent<ItemDrop>();
+            List<Recipe> recipes = ObjectDB.instance.m_recipes;
+            long crafterId = 0L;
+            string crafterName = "";
+            bool shouldIncludeCrafterTags = recipes.Exists(recipe => {
+                if (!recipe.m_item || recipeNameFilterList.Contains(recipe.name) ) {
+                    return false;
+                }
+                return recipe.m_item.Equals(itemDrop);
+            });
+
+            if (shouldIncludeCrafterTags || itemDrop.m_itemData.IsEquipable()) {
+                _logger.LogInfo($"{itemDrop.m_itemData.m_shared.m_itemType}");
+                foreach(Recipe recipe in recipes) {
+                    _logger.LogInfo($"{recipe.name}");
+                }
+                
+                crafterId = Player.m_localPlayer.GetPlayerID();
+                crafterName = Player.m_localPlayer.GetPlayerName();
+                itemDrop.m_itemData.m_crafterID = crafterId;
+                itemDrop.m_itemData.m_crafterName = crafterName;
             }
-            else
-                return Instantiate(prefab, player.transform.position + player.transform.forward * 2f + Vector3.up, Quaternion.identity);
+
+            if (pickup) {
+                Player.m_localPlayer.GetInventory().AddItem(
+                        itemDrop.name,
+                        itemDrop.m_itemData.m_stack,
+                        itemDrop.m_itemData.m_quality,
+                        itemDrop.m_itemData.m_variant,
+                        crafterId,
+                        crafterName
+                );
+                return null;
+            } else {
+                itemDrop.m_itemData.m_dropPrefab = prefab;
+                Vector3 position = player.transform.position + player.transform.forward * 2f + Vector3.up;
+                ItemDrop dropped = ItemDrop.DropItem(itemDrop.m_itemData, 1, position, Quaternion.identity);
+                return dropped.gameObject;
+            }
         }
 
         private void UndoSpawn()
