@@ -13,7 +13,7 @@ using EasySpawner.Config;
 
 namespace EasySpawner
 {
-    [BepInPlugin("cooley.easyspawner", "Easy Spawner", "1.6.0")]
+    [BepInPlugin("comfy.ComfySpawner", "Comfy Spawner", "1.6.0")]
     [BepInProcess("valheim.exe")]
     public class EasySpawnerPlugin : BaseUnityPlugin
     {
@@ -45,7 +45,7 @@ namespace EasySpawner
 
             _logger = Logger;
 
-            harmony = new Harmony("cooley.easyspawner");
+            harmony = new Harmony("comfy.ComfySpawner");
             harmony.PatchAll();
 
             config.ConfigFile = Config;
