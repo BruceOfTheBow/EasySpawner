@@ -302,12 +302,7 @@ namespace EasySpawner
                 return recipe.m_item.Equals(itemDrop);
             });
 
-            if (shouldIncludeCrafterTags || itemDrop.m_itemData.IsEquipable()) {
-                _logger.LogInfo($"{itemDrop.m_itemData.m_shared.m_itemType}");
-                foreach(Recipe recipe in recipes) {
-                    _logger.LogInfo($"{recipe.name}");
-                }
-                
+            if (shouldIncludeCrafterTags || itemDrop.m_itemData.IsEquipable()) {                
                 crafterId = Player.m_localPlayer.GetPlayerID();
                 crafterName = Player.m_localPlayer.GetPlayerName();
                 itemDrop.m_itemData.m_crafterID = crafterId;
