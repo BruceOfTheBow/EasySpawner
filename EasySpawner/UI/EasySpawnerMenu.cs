@@ -65,7 +65,6 @@ namespace EasySpawner.UI
 
             UpdateMenuSize(null, null);
 
-            UIWidth.SettingChanged -= UpdateMenuSize;
             UIWidth.SettingChanged += UpdateMenuSize;
 
             //Initial player dropdown
