@@ -3,60 +3,70 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+
 using BepInEx;
 using BepInEx.Logging;
-using HarmonyLib;
-using UnityEngine.UI;
-using UnityEngine;
+
 using EasySpawner.UI;
-using EasySpawner.Config;
+
+using HarmonyLib;
+
+using UnityEngine;
+
+using static EasySpawner.EasySpawnerConfig;
 
 namespace EasySpawner
 {
-    [BepInPlugin("comfy.ComfySpawner", "Comfy Spawner", "1.6.0")]
-    [BepInProcess("valheim.exe")]
+    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     public class EasySpawnerPlugin : BaseUnityPlugin
     {
+        public const string PluginGuid = "comfy.ComfySpawner";
+        public const string PluginName = "ComfySpawner";
+        public const string PluginVersion = "1.7.0";
+
         private static AssetBundle menuAssetBundle;
         public static GameObject menuPrefab;
         public static GameObject menuGameObject;
 
-        public static EasySpawnerMenu menu = new EasySpawnerMenu();
-        public static EasySpawnerConfig config = new EasySpawnerConfig();
+        public static EasySpawnerMenu menu = new();
+        public static EasySpawnerConfig config = new();
 
-        public static List<string> prefabNames = new List<string>();
-        private static List<string> playerNames = new List<string>();
+        public static List<string> prefabNames = new();
+        private static List<string> playerNames = new();
 
         //List of each set of gameobjects spawned. Each list correlates to a spawn action
-        public static Stack<List<GameObject>> spawnActions = new Stack<List<GameObject>>();
+        public static Stack<List<GameObject>> spawnActions = new();
 
         public const string assetBundleName = "EasySpawnerAssetBundle";
         public const string favouritesFileName = "cooley.easyspawner.favouriteItems.txt";
 
-        public static readonly string[] recipeNameFilterList = new string[] { "Recipe_PotionHealthMinor", "Recipe_PotionStaminaMinor" };
+        public static readonly string[] recipeNameFilterList =
+            new string[] { "Recipe_PotionHealthMinor", "Recipe_PotionStaminaMinor" };
 
         static ManualLogSource _logger;
+        Harmony _harmony;
 
-        public Harmony harmony;
+        public void Awake() {
+          _logger = Logger;
+          _logger.LogInfo("Easy spawner: Easy spawner loaded plugin");
 
-        void Awake()
-        {
-            Debug.Log("Easy spawner: Easy spawner loaded plugin");
+          BindConfig(Config);
 
-            _logger = Logger;
+          _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
+        }
 
-            harmony = new Harmony("comfy.ComfySpawner");
-            harmony.PatchAll();
+        public void OnDestroy() {
+          StopAllCoroutines();
+          DestroyMenu();
 
-            config.ConfigFile = Config;
-            config.SetupConfig();
+          _harmony?.UnpatchSelf();
         }
 
         void Update()
         {
-            if(Player.m_localPlayer)
+            if (Player.m_localPlayer)
             {
-                if (config.IfMenuHotkeyPressed())
+                if (ToggleMenuShortcut.Value.IsDown())
                 {
                     if (!menuGameObject)
                         CreateMenu();
@@ -65,12 +75,12 @@ namespace EasySpawner
                 }
                 else if (menuGameObject)
                 {
-                    if(config.IfSpawnHotkeyPressed())
+                    if (SpawnPrefabShortcut.Value.IsDown())
                     {
-                        Debug.Log("Spawn hotkey pressed");
+                        _logger.LogInfo("Spawn hotkey pressed");
                         menu.SpawnButton.onClick.Invoke();
                     }
-                    else if (config.IfUndoHotkeyPressed() && spawnActions.Count > 0)
+                    else if (UndoSpawnPrefabShortcut.Value.IsDown() && spawnActions.Count > 0)
                     {
                         UndoSpawn();
                     }
@@ -92,16 +102,16 @@ namespace EasySpawner
         {
             if (menuAssetBundle)
             {
-                Debug.Log("Easy spawner: menu asset bundle already loaded");
+                _logger.LogInfo("Easy spawner: menu asset bundle already loaded");
                 return;
             }
 
             menuAssetBundle = GetAssetBundleFromResources(assetFileName);
 
             if (menuAssetBundle)
-                Debug.Log("Easy spawner: menu asset bundle loaded");
+                _logger.LogInfo("Easy spawner: menu asset bundle loaded");
             else
-                Debug.Log("Easy spawner: menu asset bundle failed to load");
+                _logger.LogInfo("Easy spawner: menu asset bundle failed to load");
         }
 
         public static string GetFavouritesFilePath()
@@ -114,7 +124,7 @@ namespace EasySpawner
         /// </summary>
         public static void LoadFavourites()
         {
-            Debug.Log("Easy spawner: load favourite Items from file: " + GetFavouritesFilePath());
+            _logger.LogInfo("Easy spawner: load favourite Items from file: " + GetFavouritesFilePath());
             if (!File.Exists(GetFavouritesFilePath())) return;
 
             using (StreamReader file = File.OpenText(GetFavouritesFilePath()))
@@ -125,7 +135,7 @@ namespace EasySpawner
 
                     if (prefabName == null || !EasySpawnerMenu.PrefabStates.ContainsKey(prefabName))
                     {
-                        Debug.Log("Easy spawner: favourite prefab '"+ prefabName + "' not found");
+                        _logger.LogInfo("Easy spawner: favourite prefab '"+ prefabName + "' not found");
                         continue;
                     }
 
@@ -139,7 +149,7 @@ namespace EasySpawner
         /// </summary>
         public static void SaveFavourites()
         {
-            Debug.Log("Easy spawner: save favourite Items to file: " + GetFavouritesFilePath());
+            _logger.LogInfo("Easy spawner: save favourite Items to file: " + GetFavouritesFilePath());
             using (StreamWriter file = File.CreateText(GetFavouritesFilePath()))
             {
                 foreach (KeyValuePair<string, PrefabState> pair in EasySpawnerMenu.PrefabStates)
@@ -153,11 +163,11 @@ namespace EasySpawner
 
         private void CreateMenu()
         {
-            Debug.Log("Easy spawner: Loading menu prefab");
+            _logger.LogInfo("Easy spawner: Loading menu prefab");
 
             if (!menuAssetBundle)
             {
-                Debug.Log("EasySpawner: Asset bundle not loaded");
+                _logger.LogInfo("EasySpawner: Asset bundle not loaded");
                 return;
             }
 
@@ -166,10 +176,10 @@ namespace EasySpawner
 
             if (!menuPrefab)
             {
-                Debug.Log("Easy spawner: Loading menu prefab failed");
+                _logger.LogInfo("Easy spawner: Loading menu prefab failed");
                 return;
             }
-            Debug.Log("Easy spawner: Successfully loaded menu prefab");
+            _logger.LogInfo("Easy spawner: Successfully loaded menu prefab");
 
             //Add script to make menu mouse draggable as assetbundle cannot contain script
             if (!menuPrefab.GetComponent<UIElementDragger>())
@@ -182,7 +192,7 @@ namespace EasySpawner
 
             if (!uiGO)
             {
-                Debug.Log("Easy spawner: Couldnt find UI gameobject");
+                _logger.LogInfo("Easy spawner: Couldnt find UI gameobject");
                 return;
             }
 
@@ -201,12 +211,12 @@ namespace EasySpawner
 
         public static void SpawnPrefab(string prefabName, Player player, int amount = 1, int level = 1, bool pickup = false, bool ignoreStackSize = false)
         {
-            Debug.Log("Easy spawner: Trying to spawn " + prefabName);
+            _logger.LogInfo("Easy spawner: Trying to spawn " + prefabName);
             GameObject prefab = ZNetScene.instance.GetPrefab(prefabName);
             if (!prefab)
             {
                 Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, prefabName + " does not exist");
-                Debug.Log("Easy spawner: spawning " + prefabName + " failed");
+                _logger.LogInfo("Easy spawner: spawning " + prefabName + " failed");
             }
             else
             {
@@ -286,7 +296,7 @@ namespace EasySpawner
 
                 spawnActions.Push(spawnedObjects);
                 Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Spawning object " + prefabName);
-                Debug.Log("Easy spawner: Spawned " + amount + " " + prefabName);
+                _logger.LogInfo("Easy spawner: Spawned " + amount + " " + prefabName);
             }
         }
 
@@ -329,14 +339,14 @@ namespace EasySpawner
 
         private void UndoSpawn()
         {
-            Debug.Log("Easyspawner: Undo spawn action");
+            _logger.LogInfo("Easyspawner: Undo spawn action");
 
             if (spawnActions.Count <= 0)
                 return;
 
             List<GameObject> spawnedGameObjects = spawnActions.Pop();
 
-            Debug.Log("Easyspawner: Destroying " + spawnedGameObjects.Count + " objects");
+            _logger.LogInfo("Easyspawner: Destroying " + spawnedGameObjects.Count + " objects");
             string objectName = "objects";
 
             foreach (GameObject GO in spawnedGameObjects)
@@ -351,7 +361,7 @@ namespace EasySpawner
             }
 
             Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Undo spawn of " + spawnedGameObjects.Count + " " + objectName);
-            Debug.Log("Easyspawner: Spawn undone");
+            _logger.LogInfo("Easyspawner: Spawn undone");
         }
 
         private List<string> GetPlayerNames()
@@ -369,7 +379,7 @@ namespace EasySpawner
 
         private void PlayerListChanged()
         {
-            Debug.Log("EasySpawner: Player list changed, updating player dropdown");
+            _logger.LogInfo("EasySpawner: Player list changed, updating player dropdown");
             playerNames = GetPlayerNames();
             menu.RebuildPlayerDropdown();
         }
@@ -377,7 +387,7 @@ namespace EasySpawner
         //Coroutine to check if list of player names has changed every 3 seconds while menu gameobject exists
         private IEnumerator CheckForNewPlayersCoroutine()
         {
-            Debug.Log("EasySpawner: Starting check for new players coroutine");
+            _logger.LogInfo("EasySpawner: Starting check for new players coroutine");
             while (menuGameObject)
             {
                 yield return new WaitForSeconds(3);
@@ -401,12 +411,12 @@ namespace EasySpawner
                     }
                 }
             }
-            Debug.Log("EasySpawner: Stopping check for new players coroutine");
+            _logger.LogInfo("EasySpawner: Stopping check for new players coroutine");
         }
 
         public static void DestroyMenu()
         {
-            Debug.Log("Easy spawner: Easy spawner unloading assets");
+            _logger.LogInfo("Easy spawner: Easy spawner unloading assets");
 
             if (menuGameObject)
             {
@@ -419,18 +429,7 @@ namespace EasySpawner
             if (menuAssetBundle)
                 menuAssetBundle.Unload(true);
 
-            Debug.Log("Easy spawner: Easy spawner unloaded assets");
-        }
-
-        private void OnDestroy()
-        {
-            StopAllCoroutines();
-
-            if (menuGameObject != null)
-                DestroyMenu();
-
-            if (harmony != null)
-                harmony.UnpatchSelf();
+            _logger.LogInfo("Easy spawner: Easy spawner unloaded assets");
         }
     }
 }

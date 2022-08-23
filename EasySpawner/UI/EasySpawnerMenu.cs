@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using UnityEngine;
 using UnityEngine.UI;
-using EasySpawner.Config;
+
+using static EasySpawner.EasySpawnerConfig;
 
 namespace EasySpawner.UI
 {
@@ -49,28 +51,21 @@ namespace EasySpawner.UI
 
             Transform hotkeyTexts = menuGameObject.transform.Find("HotkeyText");
             SpawnText = hotkeyTexts.Find("SpawnText").GetComponent<Text>();
+            SpawnText.horizontalOverflow = HorizontalWrapMode.Overflow;
             UndoText = hotkeyTexts.Find("UndoText").GetComponent<Text>();
+            UndoText.horizontalOverflow = HorizontalWrapMode.Overflow;
             CloseText = hotkeyTexts.Find("CloseText").GetComponent<Text>();
+            CloseText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             //Set hotkey texts
             EasySpawnerConfig config = EasySpawnerPlugin.config;
-            if (config.SpawnHotkeyModifierSet)
-                SpawnText.text = "Spawn: " + config.FirstSpawnHotkeyModifier.Value + " + " +config.FirstSpawnHotkey.Value;
-            else
-                SpawnText.text = "Spawn: " + config.FirstSpawnHotkey.Value;
-
-            if (config.UndoHotkeyModifierSet)
-                UndoText.text = "Undo: " + config.UndoHotkeyModifier.Value + " + " + config.UndoHotkey.Value;
-            else
-                UndoText.text = "Undo: " + config.UndoHotkey.Value;
-
-            if (config.OpenHotkeyModifierSet)
-                CloseText.text = "Open: " + config.FirstOpenHotkeyModifier.Value + " + " + config.FirstOpenHotkey.Value;
-            else
-                CloseText.text = "Open: " + config.FirstOpenHotkey.Value;
+            SpawnText.text = $"Spawn: {SpawnPrefabShortcut.Value}";
+            UndoText.text = $"Undo: {UndoSpawnPrefabShortcut.Value}";
+            CloseText.text = $"Toggle: {ToggleMenuShortcut.Value}";
 
             UpdateMenuSize(null, null);
-            config.UIWidth.SettingChanged += UpdateMenuSize;
+
+            UIWidth.SettingChanged += UpdateMenuSize;
 
             //Initial player dropdown
             PlayerDropdown.ClearOptions();
@@ -97,7 +92,7 @@ namespace EasySpawner.UI
         private void UpdateMenuSize(object sender, EventArgs e)
         {
             RectTransform menuRect = (RectTransform) EasySpawnerPlugin.menuGameObject.transform;
-            menuRect.sizeDelta = new Vector2(EasySpawnerPlugin.config.UIWidth.Value, menuRect.sizeDelta.y);
+            menuRect.sizeDelta = new Vector2(UIWidth.Value, menuRect.sizeDelta.y);
         }
 
         public void PoolPrefabItem(PrefabItem item)
@@ -271,7 +266,7 @@ namespace EasySpawner.UI
             SpawnButton.onClick.RemoveAllListeners();
             PrefabItems = null;
             PrefabItemPool = new Queue<PrefabItem>();
-            EasySpawnerPlugin.config.UIWidth.SettingChanged -= UpdateMenuSize;
+            UIWidth.SettingChanged -= UpdateMenuSize;
         }
     }
 }
