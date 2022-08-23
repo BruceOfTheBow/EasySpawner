@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Thunderstore", "Thunderstore", "{5282156F-802B-4537-8065-49267DA8BB89}"
 	ProjectSection(SolutionItems) = preProject
+		Thunderstore\icon.png = Thunderstore\icon.png
 		Thunderstore\manifest.json = Thunderstore\manifest.json
 		Thunderstore\TS-README.md = Thunderstore\TS-README.md
 	EndProjectSection

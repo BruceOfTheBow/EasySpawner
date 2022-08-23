@@ -3,20 +3,26 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+
 using BepInEx;
 using BepInEx.Logging;
-using HarmonyLib;
-using UnityEngine.UI;
-using UnityEngine;
+
 using EasySpawner.UI;
 using EasySpawner.Config;
 
+using HarmonyLib;
+
+using UnityEngine;
+
 namespace EasySpawner
 {
-    [BepInPlugin("comfy.ComfySpawner", "Comfy Spawner", "1.6.0")]
-    [BepInProcess("valheim.exe")]
+    [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     public class EasySpawnerPlugin : BaseUnityPlugin
     {
+        public const string PluginGuid = "comfy.ComfySpawner";
+        public const string PluginName = "ComfySpawner";
+        public const string PluginVersion = "1.7.0";
+
         private static AssetBundle menuAssetBundle;
         public static GameObject menuPrefab;
         public static GameObject menuGameObject;
