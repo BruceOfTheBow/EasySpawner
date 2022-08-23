@@ -51,14 +51,17 @@ namespace EasySpawner.UI
 
             Transform hotkeyTexts = menuGameObject.transform.Find("HotkeyText");
             SpawnText = hotkeyTexts.Find("SpawnText").GetComponent<Text>();
+            SpawnText.horizontalOverflow = HorizontalWrapMode.Overflow;
             UndoText = hotkeyTexts.Find("UndoText").GetComponent<Text>();
+            UndoText.horizontalOverflow = HorizontalWrapMode.Overflow;
             CloseText = hotkeyTexts.Find("CloseText").GetComponent<Text>();
+            CloseText.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             //Set hotkey texts
             EasySpawnerConfig config = EasySpawnerPlugin.config;
-            SpawnText.text = SpawnPrefabShortcut.Value.ToString();
-            UndoText.text = UndoSpawnPrefabShortcut.Value.ToString();
-            CloseText.text = ToggleMenuShortcut.Value.ToString();
+            SpawnText.text = $"Spawn: {SpawnPrefabShortcut.Value}";
+            UndoText.text = $"Undo: {UndoSpawnPrefabShortcut.Value}";
+            CloseText.text = $"Toggle: {ToggleMenuShortcut.Value}";
 
             UpdateMenuSize(null, null);
 
