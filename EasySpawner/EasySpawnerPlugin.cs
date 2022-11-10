@@ -22,7 +22,7 @@ namespace EasySpawner
     {
         public const string PluginGuid = "comfy.ComfySpawner";
         public const string PluginName = "ComfySpawner";
-        public const string PluginVersion = "1.7.0";
+        public const string PluginVersion = "1.7.1";
 
         private static AssetBundle menuAssetBundle;
         public static GameObject menuPrefab;
@@ -43,7 +43,10 @@ namespace EasySpawner
         public static readonly string[] recipeNameFilterList =
             new string[] { "Recipe_PotionHealthMinor", "Recipe_PotionStaminaMinor" };
 
-        static ManualLogSource _logger;
+        public static readonly string[] itemNameFilterList =
+                new string[] { "$item_fishingbait" };
+
+    static ManualLogSource _logger;
         Harmony _harmony;
 
         public void Awake() {
@@ -312,7 +315,7 @@ namespace EasySpawner
                 return recipe.m_item.Equals(itemDrop);
             });
 
-            if (shouldIncludeCrafterTags || itemDrop.m_itemData.IsEquipable()) {                
+            if ((shouldIncludeCrafterTags || itemDrop.m_itemData.IsEquipable()) && !itemNameFilterList.Contains(itemDrop.m_itemData.m_shared.m_name)) {
                 crafterId = Player.m_localPlayer.GetPlayerID();
                 crafterName = Player.m_localPlayer.GetPlayerName();
                 itemDrop.m_itemData.m_crafterID = crafterId;

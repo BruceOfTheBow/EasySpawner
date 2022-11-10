@@ -7,8 +7,8 @@
     <ProjectGuid>{D575372D-3E88-42F8-B234-BF555C7016D6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EasySpawner</RootNamespace>
-    <AssemblyName>EasySpawner</AssemblyName>
+    <RootNamespace>ComfySpawner</RootNamespace>
+    <AssemblyName>ComfySpawner</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>9</LangVersion>
