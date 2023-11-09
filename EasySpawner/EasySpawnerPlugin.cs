@@ -191,7 +191,7 @@ namespace EasySpawner
             menuGameObject = Instantiate(menuPrefab);
 
             //Attach menu to Valheims UI gameobject
-            var uiGO = GameObject.Find("IngameGui(Clone)");
+            var uiGO = GameObject.Find("IngameGui");
 
             if (!uiGO)
             {
