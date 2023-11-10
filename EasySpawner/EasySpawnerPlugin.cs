@@ -22,7 +22,7 @@ namespace EasySpawner
     {
         public const string PluginGuid = "comfy.ComfySpawner";
         public const string PluginName = "ComfySpawner";
-        public const string PluginVersion = "1.8.0";
+        public const string PluginVersion = "1.9.0";
 
         private static AssetBundle menuAssetBundle;
         public static GameObject menuPrefab;
