@@ -22,7 +22,7 @@ namespace EasySpawner
     {
         public const string PluginGuid = "comfy.ComfySpawner";
         public const string PluginName = "ComfySpawner";
-        public const string PluginVersion = "1.7.1";
+        public const string PluginVersion = "1.8.0";
 
         private static AssetBundle menuAssetBundle;
         public static GameObject menuPrefab;
@@ -46,7 +46,7 @@ namespace EasySpawner
         public static readonly string[] itemNameFilterList =
                 new string[] { "$item_fishingbait" };
 
-    static ManualLogSource _logger;
+        static ManualLogSource _logger;
         Harmony _harmony;
 
         public void Awake() {
@@ -58,7 +58,7 @@ namespace EasySpawner
           _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), harmonyInstanceId: PluginGuid);
         }
 
-        public void OnDestroy() {
+        void OnDestroy() {
           StopAllCoroutines();
           DestroyMenu();
 
