@@ -1,8 +1,8 @@
 {
   "name": "ComfySpawner",
-  "version_number": "1.7.1",
+  "version_number": "1.8.0",
   "author": "Cooleyy",
   "website_url": "https://github.com/BruceOfTheBow/EasySpawner",
   "description": "Comfy-specific fork of EasySpawner.",
-  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.1901" ]
+  "dependencies": [ "denikson-BepInExPack_Valheim-5.4.2202" ]
 }
